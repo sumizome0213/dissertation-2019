@@ -1,0 +1,179 @@
+%Tex Live 2016
+%pLaTeXでコンパイル
+%目次や図・参考文献の参照（\figuref や \cite）を利用する場合は2回コンパイルしないと正しいPDFが生成されない（そういう仕様）
+\documentclass[10pt,a4paper]{jsarticle}
+
+%パッケージの使用宣言（includeやimportみないなもの）
+\usepackage[top=35truemm,bottom=30truemm,left=30truemm,right=30truemm]{geometry}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage[format=hang]{caption}
+\usepackage{listings, jlisting}
+
+%見出し表示調整
+\titleformat{\section}[hang]{\huge \gtfamily}{\Huge \gtfamily \thesection}{1zh}{\Huge}[{\titlerule[2pt]}]
+\titleformat{\subsection}[hang]{\Large \gtfamily}{\Large \gtfamily \thesubsection}{1zh}{\Large}[]
+
+%キャプションの表示指定
+\captionsetup[figure]{format=plain, labelformat=simple, labelsep=quad, font=large}
+\captionsetup[table]{format=plain, labelformat=simple, labelsep=quad, font=large}
+\captionsetup[lstlisting]{format=plain, labelformat=simple, labelsep=quad, font=large}
+
+%tocloftパッケージを使用すると「第n章」とタイトルの「hogehoge」か被るので注意
+\renewcommand{\presectionname}{第}
+\renewcommand{\postsectionname}{章}
+
+\makeatletter
+
+%表紙作成マクロ
+\def\id#1{\def\@id{#1}}
+\def\department#1{\def\@department{#1}}
+\def\thesis#1{\def\@thesis{#1}}
+\def\university#1{\def\@university{#1}}
+\def\supervisor#1{\def\@supervisor{#1}}
+
+\def\@maketitle{
+    \begin{center}
+    \begin{spacing}{1.5}
+    \vspace*{4zh}
+    {\LARGE \@thesis \par}
+    \vspace{38zh}
+    {\LARGE \@date \par}
+    \vspace{2zh}
+    {\LARGE \@university \par}
+    {\LARGE \@department \par}
+    {\LARGE \@id \quad}
+    {\LARGE \@author \par} 
+    \vspace{2zh}
+    {\LARGE 指導教員\quad \@supervisor \par}
+    \vspace{-62zh}
+    {\huge \gtfamily \@title \par}
+    \end{spacing}
+    \end{center}
+}
+
+%行数指定マクロ
+\def\linesparpage#1{
+    \baselineskip=\textheight
+    \divide\baselineskip by #1
+}
+
+%refコマンドだけでは「図n hogehoge」と表示してくれないので
+%\figuref{label}
+\newcommand{\figuref}[1]{図\ref{#1}}
+\newcommand{\tabref}[1]{表\ref{#1}}
+
+\renewcommand{\figurename}{図}
+\renewcommand{\tablename}{表}
+
+%図表示用マクロ
+%\fig{source path}{caption}{label}
+\newcommand{\fig}[4][width=\textwidth]{
+    \begin{figure}[!h]
+    \begin{center}
+    \includegraphics[#1]{#2}
+    \caption{#3}
+    \label{#4}
+    \end{center}
+    \end{figure}
+}
+
+%リスト表示用設定
+\renewcommand{\lstlistingname}{リスト}
+\newcommand{\lstref}[1]{リスト\ref{#1}}
+\lstset{
+    %language=, （言語を指定しない場合（対応していない言語を含む））
+    language=C, %例：C言語を指定
+    basicstyle=\normalsize,
+    commentstyle=\textit,
+    classoffset=1,
+    keywordstyle=\bfseries,
+    frame=tRBl,
+    framesep=5pt,
+    showstringspaces=false,
+    numbers=left,
+    stepnumber=1,
+    numberstyle=\large
+}
+
+\makeatother
+
+\title{モーションシミュレータを用いた重機の遠隔操縦に関する研究} %タイトル
+\thesis{2019年度　卒業論文} %年度
+\date{2020年2月} %日付
+\id{15077} %学籍番号
+\author{坂上 祥太郎} %氏名
+\university{国立東京工業高等専門学校} %学校名
+\department{情報工学科　松林研究室} %研究室名
+\supervisor{松林勝志，山下晃弘} %教員名
+
+\begin{document}
+\linesparpage{36} %行数指定
+
+%表紙
+\begin{titlepage}
+\maketitle
+\thispagestyle{empty}
+\end{titlepage}
+
+%目次
+\tableofcontents
+\thispagestyle{empty}
+\newpage
+
+%以下本文
+\setcounter{page}{1}
+\pagestyle{plain}
+
+\section{はじめに}
+
+\subsection{研究背景}
+クローラキャリアやバックホウなどの重機の遠隔操縦は，作業の少人数化や人が立ち入ることが難しい場所での作業などに大きく貢献する事ができる。実際にAIと遠隔操縦を活用することにより，操縦室からオペレータ一人で複数台の重機の操縦 \cite{hoge}や，災害時の緊急対応の実験\cite{hoge}も行われている。
+
+遠隔操縦は，現場の状況を重機や現場に設置されたカメラの映像を見ながらコントローラを用い操縦することがほとんどである。しかしこの場合，実際の操縦と異なり重機の傾きや振動をオペレータが体感する事ができない。そのため，急な斜面での操縦の際に重機の横転やオペレータから見えない埋設管の破壊などの事故が起こることがあった。また，遠隔操縦では重機に設置したカメラと重機を俯瞰する映像のみを頼りに作業を行うため，通常の約半分にまで作業効率が低下してしまう。\cite{hoge}
+
+
+\subsection{研究目的}
+本研究では，ヘッドマウントディスプレイ(以下HMD)と小型モーションシミュレータを使用したスポーツ体感システム「シンクロアスリート」を応用し，高精細4K全天球カメラを使用した実際の運転と同等の映像と，車体の傾きや振動をオペレータが体感することで，実際の操縦と同等の状態で操縦できるシステムを開発し，安全安心かつ極めて作業効率の高い重機の運用を実現する。
+
+\subsection{本論文の構成}
+第１章　はじめに」では，本論文の研究背景，研究目的を示す。「第２章　システム概要」では，本システムの概要と構成，システム構成要素を述べる。「第３章　ヒアリング調査」では，オペレータの方に行ったヒアリングの結果を述べる。「第４章　筐体の設計」では，筐体の変更点を示す。「第５章　プログラムの変更」では，プログラムの変更点を示す。「第6章　実証実験」では，制作した本体を用いて実験・評価をする。「第６章　まとめ」では，今後の展望について述べる。
+
+\newpage
+
+\fig{image/atom.jpg}{原子}{atom}
+
+\figuref{atom}は原子です\cite{irasutoya}．
+
+\section{いろいろ}
+
+\subsection{いろいろ}
+hoge
+\lstinputlisting[caption=Hello Wordのソースコード,label=helloworld]{src/hello_world.c}
+\lstref{helloworld}はCのソースコードです．
+
+\section{まとめ}
+hoge
+
+\section*{謝辞} %章番号を振らないセクションの作成
+\addcontentsline{toc}{section}{謝辞} %章番号がないセクションを目次に表示させる
+hoge
+
+\begin{flushleft} %左寄せ
+\begin{thebibliography}{9} %参考文献一覧　参考文献の個数が1桁なら9，2桁なら99...といった感じで
+\addcontentsline{toc}{section}{参考文献}
+
+\bibitem{hoge} %hogeは参考文献の参照キーで \cite{hoge} と使う
+fuga %参考文献の説明
+
+\bibitem{irasutoya}
+いらすとや，原子のイラスト，
+\\ %改行
+http://www.irasutoya.com/2017/02/blog-post\_20.html %_（アンダースコア）など一部の文字は\などでエスケースさせる必要あり
+
+\end{thebibliography}
+\end{flushleft}
+
+\end{document}
