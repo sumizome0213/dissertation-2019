@@ -1,10 +1,10 @@
 %Tex Live 2016
 %pLaTeXでコンパイル
 %目次や図・参考文献の参照（\figuref や \cite）を利用する場合は2回コンパイルしないと正しいPDFが生成されない（そういう仕様）
-\documentclass[10pt,a4paper]{jsarticle}
+\documentclass[a4paper,12pt]{jsarticle}
 
 %パッケージの使用宣言（includeやimportみないなもの）
-\usepackage[top=35truemm,bottom=30truemm,left=30truemm,right=30truemm]{geometry}
+\usepackage[truedimen,top=35truemm,bottom=30truemm,left=30truemm,right=30truemm]{geometry}
 \usepackage{fancyhdr}
 \usepackage{setspace}
 \usepackage{titlesec}
@@ -29,31 +29,35 @@
 \makeatletter
 
 %表紙作成マクロ
-\def\id#1{\def\@id{#1}}
-\def\department#1{\def\@department{#1}}
-\def\thesis#1{\def\@thesis{#1}}
-\def\university#1{\def\@university{#1}}
-\def\supervisor#1{\def\@supervisor{#1}}
-
-\def\@maketitle{
-    \begin{center}
-    \begin{spacing}{1.5}
-    \vspace*{4zh}
-    {\LARGE \@thesis \par}
-    \vspace{38zh}
-    {\LARGE \@date \par}
-    \vspace{2zh}
-    {\LARGE \@university \par}
-    {\LARGE \@department \par}
-    {\LARGE \@id \quad}
-    {\LARGE \@author \par} 
-    \vspace{2zh}
-    {\LARGE 指導教員\quad \@supervisor \par}
-    \vspace{-62zh}
-    {\huge \gtfamily \@title \par}
-    \end{spacing}
-    \end{center}
+\makeatletter
+\newcommand{\studentschoolid}[1]{\def\@studentschoolid{#1}}
+\newcommand{\lab}[1]{\def\@lab{#1}}
+\newcommand{\studentclassid}[1]{\def\@studentclassid{#1}}
+\newcommand{\professor}[1]{\def\@professor{#1}}
+\newcommand{\yearnendo}[1]{\def\@yearnendo{#1}}
+\renewcommand{\maketitle}{
+  \begin{titlepage}
+    \centering
+    {\fontsize{18pt}{36pt}\selectfont \@yearnendo{卒業研究}\par}
+    \vspace{42pt}
+    \vspace{42pt}
+    \vspace{42pt}
+    {\huge\textsf{\@title}\par}
+    \vspace{42pt}
+    \vspace{42pt}
+    \vspace{42pt}
+    {\fontsize{14pt}{42pt}\selectfont {東京工業高等専門学校　情報工学科}\par}
+    {\fontsize{14pt}{42pt}\selectfont \@lab\par}
+    {\fontsize{14pt}{42pt}\selectfont {学籍番号:\@studentschoolid}\par}
+    {\fontsize{14pt}{42pt}\selectfont {\@studentclassid　\@author}\par}
+    \vspace{28pt}
+    {\fontsize{14pt}{28pt}\selectfont 指導教員　\@professor\par}
+  
+    \vfill
+  
+  \end{titlepage}
 }
+\makeatother
 
 %行数指定マクロ
 \def\linesparpage#1{
@@ -105,22 +109,19 @@
 \makeatother
 
 \title{モーションシミュレータを用いた重機の遠隔操縦に関する研究} %タイトル
-\thesis{2019年度　卒業論文} %年度
+\yearnendo{2019年度} %年度
 \date{2020年2月} %日付
-\id{15077} %学籍番号
+\studentschoolid{15077} %学籍番号
 \author{坂上 祥太郎} %氏名
-\university{国立東京工業高等専門学校} %学校名
-\department{情報工学科　制御情報研究室} %研究室名
-\supervisor{松林勝志，山下晃弘} %教員名
+\lab{制御情報研究室} %研究室名
+\professor{松林勝志，山下晃弘} %教員名
+\studentclassid{5J17}
 
 \begin{document}
 \linesparpage{36} %行数指定
 
 %表紙
-\begin{titlepage}
 \maketitle
-\thispagestyle{empty}
-\end{titlepage}
 
 %目次
 \tableofcontents
@@ -151,6 +152,8 @@
 本システムは，リアルタイムに選手とシンクロするスポーツ観戦システム「シンクロアスリート」\cite{synchro}を元に，筐体・ソフトウェアを変更し，実現する。システム構成図を\figuref{sys_config}に示す。
 \fig{image/sys_config.png}{システム構成図}{sys_config}
 
+シンクロアスリートと同様に，動きには360度カメラ，
+
 \clearpage
 
 \section{ヒアリング調査}
@@ -159,9 +162,14 @@
 \fig[width=9cm]{image/synchro_image.jpg}{シンクロアスリート}{synchro_image}
 
 \subsection{映像の収録}
-この映像と動きは熊谷組筑波技術研究所内の実験フィールド(\figuref{test_field})で収録した。収録では，前進・後退に加え斜面の登り降りや左右に傾いた斜面の走行など，工事現場で想定される一連の動きを再現した。また，全天球カメラは操縦室車内に取り付け，実際の操縦と同じ目線で体感できるようにした。
+この映像と動きは熊谷組筑波技術研究所内の実験フィールド(\figuref{test_field})で収録した。収録ではクローラーダンプを用い，前進・後退に加え斜面の登り降りや左右に傾いた斜面の走行など，工事現場で想定される一連の動きを再現した。また，全天球カメラは操縦室車内(\figuref{inside_camera})，車外上方(\figuref{outside_camera})の二箇所に取り付け，実際の操縦と同じ目線と上方からの見下ろすような視点で体感できるようにした。
 \fig[width=9cm]{image/test_field.jpg}{実験フィールド}{test_field}
+\\
+\fig[width=9cm]{image/inside_camera.jpg}{車内カメラ}{inside_camera}
+\\
+\fig[width=9cm]{image/outside_camera.jpg}{車外カメラ}{outside_camera}
 
+\clearpage
 \subsection{ヒアリング結果}
 ヒアリングの結果，「本物の重機とほぼ同じような感覚を得ることができる」と評価をしていただいた。しかし，いくつかの課題の指摘もあった。
 
@@ -185,30 +193,49 @@ HMDでは操縦が行い辛いということがわかった。遠隔操縦の�
 \end{itemize}
 
 \subsection{設計}
-設計ではシンクロアスリートの筐体の設計図を改変する形をとった。具体的に主に以下の点を変更した。
+設計ではシンクロアスリートの筐体の設計図を改変する形をとった。具体的には主に以下の点を変更した。
 
 \subsubsection{椅子の変更}
 体をホールドしない以前の丸型の椅子から,体をしっかりホールドする自動車運転用の椅子(\figuref{recaro})に変更する。
-\fig[width=9cm]{image/test_field.jpg}{自動車運転用の椅子}{recaro}
+\fig[width=9cm]{image/recaro.png}{自動車運転用の椅子}{recaro}
 
 \subsubsection{筐体へのディスプレイの取り付け}
 HMDは360°見ることができるが，コントローラを目視することができない。そのためディスプレイ三台を筐体に取り付け，椅子と同時に動かし，ディスプレイを使っての操縦も可能にした。
 
 \subsubsection{コントローラの設置}
-操縦の際にはコントローラが必要である。実際の重機と同等のコントローラー(\figuref{controller})を左手アームレストに設置した。それにより乗り降りの障害にならず，且つ操縦が行いやすくした。
-\fig[width=9cm]{image/test_field.jpg}{重機のコントローラー}{controller}
+操縦の際にはコントローラが必要である。実際の重機と同等のコントローラーを左手アームレストに設置した。(\figuref{controller})それにより乗り降りの障害にならず，且つ操縦が行いやすくした。
+\fig[width=9cm]{image/controller.png}{コントローラーの設置}{controller}
 
 \subsection{製作}
 上記を踏まえ，設計した図面を元に製作した。\figuref{body}が製作した筐体である。
-\fig[width=9cm]{image/test_field.jpg}{製作した筐体}{body}
+\fig[width=9cm]{image/body.jpg}{製作した筐体}{body}
 
 \clearpage
 
-\section{ソフトウェアの変更}
+\section{プログラムの変更}
+\subsection{概要}
+重機の遠隔操縦に適するよう，プログラムにも変更を施した。開発環境を以下に示す。
+\begin{itemize}
+    \item OS : Microsoft Windows 10 Pro
+    \item プロセッサ : Intel Core i7-7700k
+    \item メモリ : DDR4 16GB
+    \item GPU : NVDIA GeForece GTX 1070
+\end{itemize}
+
+\subsection{ストリーミング方式の変更}
+遠隔操縦では，映像を見ながら操縦するため，より高いリアルタイム性・高画質が求められる。熊谷組研究員の体感によるとおよそ300ms程までには遅延を短くする必要がある。そこで遅延を低減させるために，従来のMJPEGを利用した動画ストリーミング方式からよりリアルタイム性の高いWebRTCに変更した。また同時に，カメラを従来の「Richo Theta S」から「Richo Theta Z1」に変更し4Kの解像度まで画質を高めることにした。
+
+\subsection{カメラの2台利用}
+運転席内のカメラだけでは，後方の確認が難しい。そのため，運転室外の後方側にもう一台カメラを設置し，後方の確認が行いやすいようにした。
+
+\subsection{プログラムのリファクタリング}
+シンクロアスリートプロジェクト2016年当初から同じプログラムを使いまわしており，プログラムが煩雑になっていた。また，使用しているゲームエンジン「Unity」そのため今後の開発を踏まえ，Unity2018LTSへのリファクタリングを行った。
 
 \clearpage
 
 \section{実証実験}
+\subsection{概要}
+熊谷組筑波技術研究所でクローラーダンプを用いて実験を行った。実験では熊谷組のオペレータの方に，実際に操縦をしていただいた(図3)。 その結果，「本物の重機とほぼ同じような感覚で操縦をすることができた」「後方にもカメラが有るため，普段では見ることができない後方を確認しながら操縦をすることができるので扱いやすかった」との 評価をいただいた。
 
 \clearpage
 
